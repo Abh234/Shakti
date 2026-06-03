@@ -18,11 +18,11 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   Animation<Offset>? _slideAnimation;
 
   // --- Color Palette ---
-  static const Color _backgroundColor = Color.fromARGB(255, 0, 0, 0);
-  static const Color _primaryTextColor = Colors.white;
-  static const Color _secondaryTextColor = Color(0xFFBDBDBD);
-  static const Color _gradientStart = Color(0xFF6A359C);
-  static const Color _gradientEnd = Color(0xFFB557A9);
+  static const Color _backgroundColor = Color(0xFFF8FAFC);
+  static const Color _primaryTextColor = Color(0xFF0F172A);
+  static const Color _secondaryTextColor = Color(0xFF64748B);
+  static const Color _gradientStart = Color(0xFF2563EB);
+  static const Color _gradientEnd = Color(0xFF10B981);
 
   final List<Map<String, String>> slideContent = [
     {
@@ -287,13 +287,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.4),
-            blurRadius: 20,
+            color: const Color(0xFF0F172A).withOpacity(0.12),
+            blurRadius: 18,
             offset: const Offset(0, 10),
-            spreadRadius: 2,
           ),
         ],
       ),
@@ -367,8 +366,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(4),
             color: _currentIndex == entry.key
-                ? _gradientEnd
-                : Colors.white.withOpacity(0.3),
+                ? _gradientStart
+                : const Color(0xFFCBD5E1),
           ),
         );
       }).toList(),
@@ -380,12 +379,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
       margin: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
       padding: const EdgeInsets.all(20.0),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.05),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Colors.white.withOpacity(0.1),
+          color: const Color(0xFFE2E8F0),
           width: 1,
         ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF0F172A).withOpacity(0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
       ),
       child: Row(
         children: [
@@ -410,7 +416,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const Text(
-                  'Your AI Guardian Angel',
+                  'Your AI Safety Guardian',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -419,7 +425,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  '24/7 protection with cutting-edge AI technology',
+                  'Safe route, SOS, evidence mode, and voice control',
                   style: TextStyle(
                     fontSize: 13,
                     color: _secondaryTextColor,
@@ -440,7 +446,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               children: [
                 Icon(
                   Icons.verified,
-                  color: _gradientEnd,
+                  color: _gradientStart,
                   size: 14,
                 ),
                 SizedBox(width: 4),
@@ -448,7 +454,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   '50K+',
                   style: TextStyle(
                     fontSize: 12,
-                    color: _gradientEnd,
+                    color: _gradientStart,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -476,7 +482,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: _gradientStart.withOpacity(0.5),
+                  color: _gradientStart.withOpacity(0.24),
                   blurRadius: 15,
                   offset: const Offset(0, 8),
                 ),

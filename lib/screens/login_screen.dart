@@ -12,11 +12,11 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   // --- Consistent Color Palette ---
-  static const Color _backgroundColor = Color.fromARGB(255, 0, 0, 0);
-  static const Color _primaryTextColor = Colors.white;
-  static const Color _secondaryTextColor = Color(0xFFBDBDBD);
-  static const Color _gradientStart = Color(0xFF6A359C);
-  static const Color _gradientEnd = Color(0xFFB557A9);
+  static const Color _backgroundColor = Color(0xFFF8FAFC);
+  static const Color _primaryTextColor = Color(0xFF0F172A);
+  static const Color _secondaryTextColor = Color(0xFF64748B);
+  static const Color _gradientStart = Color(0xFF2563EB);
+  static const Color _gradientEnd = Color(0xFF10B981);
 
   final _authService = AuthService();
   bool _isLoading = false;
@@ -154,14 +154,14 @@ class _LoginScreenState extends State<LoginScreen> {
         const SizedBox(height: 32),
         _buildEnhancedGoogleLoginButton(),
         const SizedBox(height: 16),
-        _buildEnhancedAppleLoginButton(),
+        _buildDemoLoginButton(),
         const SizedBox(height: 24),
         Row(
           children: [
             Expanded(
               child: Container(
                 height: 1,
-                color: Colors.white.withOpacity(0.2),
+                color: const Color(0xFFE2E8F0),
               ),
             ),
             Padding(
@@ -178,7 +178,7 @@ class _LoginScreenState extends State<LoginScreen> {
             Expanded(
               child: Container(
                 height: 1,
-                color: Colors.white.withOpacity(0.2),
+                color: const Color(0xFFE2E8F0),
               ),
             ),
           ],
@@ -204,18 +204,17 @@ class _LoginScreenState extends State<LoginScreen> {
       height: 64,
       margin: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(20),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
-          color: Colors.white.withOpacity(0.2),
+          color: const Color(0xFFE2E8F0),
           width: 1,
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.2),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-            spreadRadius: 1,
+            color: const Color(0xFF0F172A).withOpacity(0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -275,7 +274,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 Icon(
                   Icons.arrow_forward_ios,
                   size: 16,
-                  color: Colors.white.withOpacity(0.5),
+                  color: _secondaryTextColor,
                 ),
               ],
             ),
@@ -285,7 +284,7 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Widget _buildEnhancedAppleLoginButton() {
+  Widget _buildDemoLoginButton() {
     return Container(
       width: double.infinity,
       height: 64,
@@ -295,18 +294,16 @@ class _LoginScreenState extends State<LoginScreen> {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            Color(0xFF000000),
-            Color(0xFF1a1a1a),
-            Color(0xFF000000),
+            _gradientStart,
+            _gradientEnd,
           ],
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 6),
-            spreadRadius: 1,
+            color: _gradientStart.withOpacity(0.22),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -315,7 +312,10 @@ class _LoginScreenState extends State<LoginScreen> {
         child: InkWell(
           onTap: () {
             HapticFeedback.mediumImpact();
-            _showComingSoonSnackBar('Apple login coming soon!');
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => const CustomerMapTab()),
+            );
           },
           borderRadius: BorderRadius.circular(20),
           child: const Padding(
@@ -323,14 +323,14 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Row(
               children: [
                 Icon(
-                  Icons.apple,
+                  Icons.shield_rounded,
                   size: 32,
                   color: Colors.white,
                 ),
                 SizedBox(width: 16),
                 Expanded(
                   child: Text(
-                    'Continue with Apple',
+                    'Explore Demo Map',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 17,
