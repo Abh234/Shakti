@@ -4,12 +4,14 @@ import 'package:geolocator/geolocator.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:async';
+import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../services/map_service.dart';
 import 'pages/chatbot_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 
 // ── Pharmacy Tier Model is now in MapService ──────────────────────────────────
 
@@ -55,6 +57,7 @@ class _CustomerMapTabState extends State<CustomerMapTab>
     _loadIcons();
     _startLocationTracking();
     _initUser();
+    Future.delayed(const Duration(milliseconds: 900), _ensureGuardianOverlay);
   }
 
   void _initUser() {
@@ -65,6 +68,30 @@ class _CustomerMapTabState extends State<CustomerMapTab>
     _userSubscription = FirebaseAuth.instance.authStateChanges().listen((u) {
       if (mounted) setState(() => _currentUser = u);
     });
+  }
+
+  Future<void> _ensureGuardianOverlay() async {
+    if (!Platform.isAndroid) return;
+    try {
+      var granted = await FlutterOverlayWindow.isPermissionGranted();
+      if (!granted) {
+        granted = await FlutterOverlayWindow.requestPermission() ?? false;
+      }
+      if (!granted) return;
+
+      await FlutterOverlayWindow.showOverlay(
+        enableDrag: true,
+        overlayTitle: 'Shakti Guardian',
+        overlayContent: 'Emergency bubble active',
+        flag: OverlayFlag.defaultFlag,
+        visibility: NotificationVisibility.visibilityPublic,
+        positionGravity: PositionGravity.auto,
+        height: 200,
+        width: 250,
+      );
+    } catch (e) {
+      debugPrint('Guardian overlay unavailable: $e');
+    }
   }
 
   Future<void> _loadIcons() async {
