@@ -269,7 +269,7 @@ class MapService {
     _notificationController.close();
   }
 
-  /// Fetch pharmacies near a location
+  /// Fetch safety help points near a location.
   Future<List<Pharmacy>> fetchNearbyPharmacies(double lat, double lng) async {
     try {
       final response = await http.get(Uri.parse(ApiConfig.pharmaciesList));
@@ -293,7 +293,7 @@ class MapService {
       _pharmacies = [];
     }
 
-    // fallback to demo shops near Nanded for stable demo UX
+    // fallback to demo safety points near Nanded for stable demo UX
     if (_pharmacies.isEmpty) {
       _pharmacies = _buildNandedDemoPharmacies();
     }
@@ -305,7 +305,7 @@ class MapService {
     return [
       Pharmacy(
         id: ApiConfig.primaryPharmacyId,
-        name: 'Sanjeevani Nexus Pharmacy - Nanded',
+        name: 'Vazirabad Police Help Point',
         lat: _nandedLat + 0.0020,
         lng: _nandedLng + 0.0014,
         tier: PharmacyTier.ultraPro,
@@ -317,7 +317,7 @@ class MapService {
       ),
       Pharmacy(
         id: 'NANDED_DEMO_2',
-        name: 'CarePlus Medical - Degloor Naka',
+        name: 'Civil Hospital Safe Zone',
         lat: _nandedLat - 0.0018,
         lng: _nandedLng + 0.0022,
         tier: PharmacyTier.pro,
@@ -329,7 +329,7 @@ class MapService {
       ),
       Pharmacy(
         id: 'NANDED_DEMO_3',
-        name: 'Shiv Medico - ITI Corner',
+        name: 'Public Safe Place - ITI Corner',
         lat: _nandedLat + 0.0012,
         lng: _nandedLng - 0.0024,
         tier: PharmacyTier.base,

@@ -5,16 +5,15 @@ import 'dart:math' as math;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-const Color _voiceBackground = Color(0xFF000000);
-const Color _voiceSurface = Color(0xFF111111);
-const Color _voiceElevated = Color(0xFF1A1A1A);
-const Color _voiceBorder = Color(0xFF2A2A2A);
-const Color _voicePrimaryText = Colors.white;
-const Color _voiceSecondaryText = Color(0xFFBDBDBD);
-const Color _voiceAccent = Color(0xFFFF69B4);
-const Color _voiceAccentDeep = Color(0xFF8B5CF6);
+const Color _voiceBackground = Color(0xFFF8FAFC);
+const Color _voiceSurface = Colors.white;
+const Color _voiceElevated = Color(0xFFEFF6FF);
+const Color _voiceBorder = Color(0xFFE2E8F0);
+const Color _voicePrimaryText = Color(0xFF0F172A);
+const Color _voiceSecondaryText = Color(0xFF64748B);
+const Color _voiceAccent = Color(0xFF2563EB);
+const Color _voiceAccentDeep = Color(0xFF10B981);
 
 class AIAssistantScreen extends StatefulWidget {
   const AIAssistantScreen({super.key});
@@ -191,7 +190,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
           .post(
             Uri.parse(_serverUrl),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'message': command}),
+            body: jsonEncode({'message': _buildSafetyPrompt(command)}),
           )
           .timeout(const Duration(seconds: 20));
 
@@ -210,8 +209,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
 
         _speakResponse();
       } else {
-        _tts.speak(
-            'I\'m experiencing technical difficulties. Please try again.');
+        _tts.speak(_fallbackVoiceReply(command));
         setState(() {
           _isProcessing = false;
         });
@@ -220,16 +218,7 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
         }
       }
     } catch (e) {
-      String errorMessage;
-      if (e is TimeoutException) {
-        errorMessage =
-            'Connection timeout. Please check your internet and try again.';
-      } else {
-        errorMessage =
-            'I\'m having trouble connecting. Please try again later.';
-      }
-
-      _tts.speak(errorMessage);
+      _tts.speak(_fallbackVoiceReply(command));
       setState(() {
         _isProcessing = false;
       });
@@ -256,6 +245,34 @@ class _AIAssistantScreenState extends State<AIAssistantScreen>
         .split(RegExp(r'(?<=[.!?])\s+'))
         .where((s) => s.isNotEmpty)
         .toList();
+  }
+
+  String _buildSafetyPrompt(String command) {
+    return '''
+You are Shakti, an AI voice safety assistant for a women's safety mobile app.
+Reply briefly, clearly, and in a calm voice-friendly style. If the user may be
+unsafe, prioritize public place, SOS, live location, fake call, evidence mode,
+and trusted contact steps. Keep it practical for India.
+
+User voice command: $command
+''';
+  }
+
+  String _fallbackVoiceReply(String command) {
+    final lower = command.toLowerCase();
+    if (lower.contains('red alert') ||
+        lower.contains('sos') ||
+        lower.contains('danger') ||
+        lower.contains('follow')) {
+      return 'Emergency guidance active. Move toward a crowded and well lit place. Keep your phone visible. Use SOS, share live location, and start evidence recording if it is safe.';
+    }
+    if (lower.contains('fake call')) {
+      return 'Fake call can help you exit the situation. Keep walking toward a public place and pretend you are speaking to a trusted contact.';
+    }
+    if (lower.contains('route')) {
+      return 'Choose the route with better lighting, public movement, and nearby help points. Avoid isolated shortcuts.';
+    }
+    return 'I am listening. You can say red alert, start SOS, fake call, record evidence, or find safe route.';
   }
 
   void _holdAssistant() {
