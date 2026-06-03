@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shakti/services/map_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -14,18 +15,19 @@ import 'package:http_parser/http_parser.dart';
 import 'mic_style.dart';
 import 'voice_assisatnt_page.dart';
 
-const Color _chatBackground = Color(0xFF000000);
-const Color _chatSurface = Color(0xFF111111);
-const Color _chatElevated = Color(0xFF1A1A1A);
-const Color _chatBorder = Color(0xFF2A2A2A);
-const Color _chatPrimaryText = Colors.white;
-const Color _chatSecondaryText = Color(0xFFBDBDBD);
-const Color _chatAccent = Color(0xFFFF69B4);
-const Color _chatAccentDeep = Color(0xFF8B5CF6);
+const Color _chatBackground = Color(0xFFF8FAFC);
+const Color _chatSurface = Colors.white;
+const Color _chatElevated = Color(0xFFEFF6FF);
+const Color _chatBorder = Color(0xFFE2E8F0);
+const Color _chatPrimaryText = Color(0xFF0F172A);
+const Color _chatSecondaryText = Color(0xFF64748B);
+const Color _chatAccent = Color(0xFF2563EB);
+const Color _chatAccentDeep = Color(0xFF10B981);
+const Color _chatUserBubble = Color(0xFF2563EB);
 
-// Wrapper used by HomeScreen navigation
 class ChatbotPage extends StatelessWidget {
-  const ChatbotPage({super.key});
+  final Pharmacy? initialPharmacy;
+  const ChatbotPage({super.key, this.initialPharmacy});
 
   @override
   Widget build(BuildContext context) => const ChatBotScreen();
@@ -174,6 +176,75 @@ class _ChatBotScreenState extends State<ChatBotScreen>
         : 'Chat';
   }
 
+  String _buildSafetyPrompt(String text) {
+    return '''
+You are Shakti, an AI safety assistant for a women's safety mobile app.
+Answer with calm, practical, concise guidance. If the user may be in danger,
+prioritize immediate safety steps, moving to a public place, calling emergency
+contacts, using SOS, fake call, evidence recording, and live location sharing.
+Do not overclaim police/legal/medical certainty. Keep the answer useful for India.
+
+User message: $text
+''';
+  }
+
+  String _fallbackSafetyReply(String text) {
+    final lower = text.toLowerCase();
+    if (lower.contains('follow') ||
+        lower.contains('unsafe') ||
+        lower.contains('danger') ||
+        lower.contains('scared')) {
+      return '''
+I understand. Do this now:
+
+1. Move toward a crowded, well-lit place.
+2. Keep your phone unlocked and start live location sharing.
+3. Tap SOS if the person keeps following you.
+4. Start Evidence Mode if it is safe to record.
+5. Call a trusted contact and say your exact location clearly.
+
+If you are in immediate danger, call local emergency services now.
+''';
+    }
+    if (lower.contains('route') || lower.contains('travel')) {
+      return '''
+For safer travel, choose the route with:
+
+- better lighting
+- more public movement
+- nearby police station, hospital, petrol pump, or open shops
+- fewer isolated turns
+
+Avoid shortcuts through quiet lanes at night. Use the Safe Route screen and keep Guardian Mode active.
+''';
+    }
+    if (lower.contains('sos') || lower.contains('emergency')) {
+      return '''
+Emergency mode should:
+
+1. Lock your current location.
+2. Notify emergency contacts.
+3. Start evidence recording if safe.
+4. Keep the fake call option ready.
+5. Show nearby help points.
+
+Use SOS immediately if you cannot safely talk.
+''';
+    }
+    return '''
+I am Shakti, your AI safety assistant. I can help with:
+
+- safe route decisions
+- SOS guidance
+- fake call escape steps
+- evidence recording advice
+- emergency message drafting
+- nearby help planning
+
+Tell me what is happening or where you are going.
+''';
+  }
+
   Future<void> _sendMessage(String text) async {
     if (text.trim().isEmpty) return;
     setState(() {
@@ -190,7 +261,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           .post(
             Uri.parse(_serverUrl),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'message': text}),
+            body: jsonEncode({'message': _buildSafetyPrompt(text)}),
           )
           .timeout(const Duration(seconds: 20));
       final elapsed = DateTime.now().difference(startTime);
@@ -215,8 +286,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       } else {
         setState(() {
           messages.add(ChatMessage(
-            text:
-                'Server Error ${response.statusCode}: Could not get a valid response. Please check the server logs.',
+            text: _fallbackSafetyReply(text),
             isUser: false,
           ));
           isTyping = false;
@@ -227,17 +297,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
         setState(() => isTyping = false);
         return;
       }
-      String errorMessage;
-      if (e is TimeoutException) {
-        errorMessage =
-            "Connection Timed Out.\n\nIs the Python server running and responsive?";
-      } else {
-        errorMessage =
-            "Connection Failed.\n\n- Is the Python server running on your computer?\n- Is a firewall blocking the connection to port 5000?";
-      }
       setState(() {
         messages.add(ChatMessage(
-          text: errorMessage,
+          text: _fallbackSafetyReply(text),
           isUser: false,
         ));
         isTyping = false;
@@ -276,7 +338,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           .post(
             Uri.parse(_serverUrl),
             headers: {'Content-Type': 'application/json'},
-            body: jsonEncode({'message': userMsg}),
+            body: jsonEncode({'message': _buildSafetyPrompt(userMsg)}),
           )
           .timeout(const Duration(seconds: 20));
       if (_stopRequested) {
@@ -297,8 +359,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       } else {
         setState(() {
           messages.add(ChatMessage(
-            text:
-                'Server Error ${response.statusCode}: Could not get a valid response.',
+            text: _fallbackSafetyReply(userMsg),
             isUser: false,
             type: 'text',
           ));
@@ -310,17 +371,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
         setState(() => isTyping = false);
         return;
       }
-      String errorMessage;
-      if (e is TimeoutException) {
-        errorMessage =
-            "Connection Timed Out.\n\nIs the Python server running and responsive?";
-      } else {
-        errorMessage =
-            "Connection Failed.\n\n- Is the Python server running on your computer?\n- Is a firewall blocking the connection?";
-      }
       setState(() {
         messages.add(ChatMessage(
-          text: errorMessage,
+          text: _fallbackSafetyReply(userMsg),
           isUser: false,
           type: 'text',
         ));
@@ -747,9 +800,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                         padding: const EdgeInsets.symmetric(
                             horizontal: 16, vertical: 12),
                         decoration: BoxDecoration(
-                          color: message.isUser
-                              ? const Color(0xFF2A1025)
-                              : _chatSurface,
+                          color: message.isUser ? _chatUserBubble : _chatSurface,
                           border: Border.all(color: _chatBorder),
                           borderRadius: BorderRadius.circular(18),
                         ),
@@ -831,9 +882,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       return Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          color: message.isUser
-              ? const Color(0xFF2A1025)
-              : _chatSurface,
+          color: message.isUser ? _chatUserBubble : _chatSurface,
           border: Border.all(color: _chatBorder),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -848,8 +897,8 @@ class _ChatBotScreenState extends State<ChatBotScreen>
             const SizedBox(height: 8),
             Text(
               message.text,
-              style: const TextStyle(
-                color: _chatPrimaryText,
+              style: TextStyle(
+                color: message.isUser ? Colors.white : _chatPrimaryText,
                 fontSize: 16,
               ),
             ),
@@ -941,7 +990,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           : Text(
               message.text,
               style: const TextStyle(
-                color: _chatPrimaryText,
+                color: Colors.white,
                 fontSize: 16,
               ),
             );
@@ -1035,8 +1084,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _chatBackground,
-        border:
-            const Border(top: BorderSide(color: _chatBorder, width: 1)),
+        border: const Border(top: BorderSide(color: _chatBorder, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.45),
@@ -1098,7 +1146,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
             if (isTyping)
               ElevatedButton.icon(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF69B4),
+                  backgroundColor: _chatAccent,
                   minimumSize: const Size(36, 48),
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1152,8 +1200,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon:
-                      const Icon(Icons.auto_awesome, color: _chatAccentDeep),
+                  icon: const Icon(Icons.auto_awesome, color: _chatAccentDeep),
                   iconSize: 24,
                   onPressed: _onVoiceAssistantPressed,
                   tooltip: 'Voice Assistant',
@@ -1388,8 +1435,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       } else {
         setState(() {
           messages.add(ChatMessage(
-            text:
-                'Server Error ${response.statusCode}: Could not get a valid response. Please check the server logs.',
+            text: _fallbackSafetyReply(message.text),
             isUser: false,
             type: 'text',
           ));
@@ -1402,17 +1448,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
         setState(() => isTyping = false);
         return;
       }
-      String errorMessage;
-      if (e is TimeoutException) {
-        errorMessage =
-            "Connection Timed Out. Is the Python server running and responsive?";
-      } else {
-        errorMessage =
-            "Connection Failed. Is the Python server running and accessible?";
-      }
       setState(() {
         messages.add(ChatMessage(
-          text: errorMessage,
+          text: _fallbackSafetyReply(message.text),
           isUser: false,
           type: 'text',
         ));
@@ -1535,8 +1573,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.edit_outlined,
-                          size: 20, color: _chatAccent),
+                      Icon(Icons.edit_outlined, size: 20, color: _chatAccent),
                       SizedBox(width: 12),
                       Text(
                         'New chat',
@@ -1617,7 +1654,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                    color: _chatPrimaryText,
+                      color: _chatPrimaryText,
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -1802,9 +1839,9 @@ class _ChatBotScreenState extends State<ChatBotScreen>
         margin: const EdgeInsets.only(right: 12),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: const Color(0xFFF3E5F5),
+          color: _chatElevated,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFF6A1B9A), width: 1),
+          border: Border.all(color: _chatBorder, width: 1),
           boxShadow: [
             BoxShadow(
               color: Colors.grey.withOpacity(0.1),
@@ -1817,12 +1854,12 @@ class _ChatBotScreenState extends State<ChatBotScreen>
           mainAxisSize: MainAxisSize.min,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 24, color: const Color(0xFF6A1B9A)),
+            Icon(icon, size: 24, color: _chatAccent),
             const SizedBox(height: 8),
             Text(
               label,
               style: const TextStyle(
-                color: Color(0xFF6A1B9A),
+                color: _chatPrimaryText,
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
               ),
@@ -1988,22 +2025,22 @@ class _ChatBotScreenState extends State<ChatBotScreen>
     return SizedBox(
       width: 320,
       child: ElevatedButton.icon(
-        icon: Icon(icon, color: const Color(0xFF6A1B9A), size: 22),
+        icon: Icon(icon, color: _chatAccent, size: 22),
         label: Text(
           text,
           style: const TextStyle(
-            color: Color(0xFF36013F),
+            color: _chatPrimaryText,
             fontWeight: FontWeight.w600,
             fontSize: 12,
           ),
           maxLines: 1,
         ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFFF8F8FA),
+          backgroundColor: Colors.white,
           elevation: 0,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(10),
-            side: const BorderSide(color: Color(0xFFE0E0E0)),
+            side: const BorderSide(color: _chatBorder),
           ),
           padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
           alignment: Alignment.centerLeft,
