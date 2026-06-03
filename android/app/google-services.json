@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "380455043349",
+    "project_id": "shakti-a2be9",
+    "storage_bucket": "shakti-a2be9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:380455043349:android:588159cb4ee9e83c1be91c",
+        "android_client_info": {
+          "package_name": "com.example.shakti"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCAFKTJBOMSDPw3vgrk4Gnafi-6zP_TtCE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

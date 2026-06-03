@@ -27,7 +27,7 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       final userCredential = await _authService.signInWithGoogle();
       
-      if (!mounted) return;
+      if (!context.mounted) return;
       
       if (userCredential != null) {
         // Success
@@ -38,19 +38,21 @@ class _LoginScreenState extends State<LoginScreen> {
         );
       } else {
         // Cancelled
+        setState(() => _isLoading = false);
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Sign in cancelled.')),
         );
       }
     } catch (e) {
-      if (!mounted) return;
+      if (!context.mounted) return;
+      setState(() => _isLoading = false);
+      debugPrint('Google Sign-In Error: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sign in failed. Please try again.')),
+        SnackBar(
+          content: Text('Sign in failed: ${e.toString()}'),
+          duration: const Duration(seconds: 5),
+        ),
       );
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
     }
   }
 
