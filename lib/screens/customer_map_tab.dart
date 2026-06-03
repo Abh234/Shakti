@@ -7,19 +7,14 @@ import 'dart:async';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import '../services/map_service.dart';
-import '../pages/chatbot_page.dart';
-
-
-
-
-
-
+import 'pages/chatbot_page.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 // ── Pharmacy Tier Model is now in MapService ──────────────────────────────────
 
 class CustomerMapTab extends StatefulWidget {
-  const CustomerMapTab({super.key}); */
+  const CustomerMapTab({super.key});
 
   @override
   State<CustomerMapTab> createState() => _CustomerMapTabState();
@@ -59,19 +54,17 @@ class _CustomerMapTabState extends State<CustomerMapTab>
     super.initState();
     _loadIcons();
     _startLocationTracking();
-    // _initUser();
+    _initUser();
   }
 
-  /* void _initUser() {
-    final svc = UserService();
-    // Get initial
-    svc.currentUser.then((u) {
-      if (mounted) setState(() => _currentUser = u);
-    }); */
+  void _initUser() {
+    final user = FirebaseAuth.instance.currentUser;
+    if (mounted) setState(() => _currentUser = user);
+
     // Listen for updates
-    _userSubscription = svc.userStream.listen((u) {
+    _userSubscription = FirebaseAuth.instance.authStateChanges().listen((u) {
       if (mounted) setState(() => _currentUser = u);
-    }); */
+    });
   }
 
   Future<void> _loadIcons() async {
@@ -140,7 +133,7 @@ class _CustomerMapTabState extends State<CustomerMapTab>
       } catch (e) {
         debugPrint('Location error: $e');
       }
-    }); */
+    });
   }
 
   Future<void> _onMapCreated(mapbox.MapboxMap mapboxMap) async {
@@ -170,19 +163,19 @@ class _CustomerMapTabState extends State<CustomerMapTab>
         timer.cancel();
         _initializeMapComponents();
       }
-    }); */
+    });
   }
 
   Future<void> _initializeMapComponents() async {
     if (_mapInitialized || _mapboxMap == null) return;
     _mapInitialized = true;
 
-    _pointAnnotationManager = await _mapboxMap!.annotations
-        .createPointAnnotationManager();
-    _medicalAnnotationManager = await _mapboxMap!.annotations
-        .createPointAnnotationManager();
-    _userAnnotationManager = await _mapboxMap!.annotations
-        .createPointAnnotationManager();
+    _pointAnnotationManager =
+        await _mapboxMap!.annotations.createPointAnnotationManager();
+    _medicalAnnotationManager =
+        await _mapboxMap!.annotations.createPointAnnotationManager();
+    _userAnnotationManager =
+        await _mapboxMap!.annotations.createPointAnnotationManager();
 
     _pointAnnotationManager?.addOnPointAnnotationClickListener(
       _OnPharmacyClickListener(
@@ -356,8 +349,7 @@ class _CustomerMapTabState extends State<CustomerMapTab>
   Future<void> _updateUserLocationAnnotation() async {
     if (_userAnnotationManager == null ||
         _currentPosition == null ||
-        _userIconData == null)
-      return;
+        _userIconData == null) return;
 
     try {
       await _userAnnotationManager!.deleteAll();
@@ -522,7 +514,7 @@ class _CustomerMapTabState extends State<CustomerMapTab>
                       const Color(0xFF374151),
                       onTap: () => Navigator.of(
                         context,
-                      ).push(_fastRoute(Container())),
+                      ).push(_fastRoute(const CustomerNotificationsPage())),
                     ),
                     Builder(
                       builder: (context) {
@@ -539,7 +531,8 @@ class _CustomerMapTabState extends State<CustomerMapTab>
                             decoration: BoxDecoration(
                               color: Colors.redAccent,
                               shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white, width: 1.5),
+                              border:
+                                  Border.all(color: Colors.white, width: 1.5),
                             ),
                             child: Center(
                               child: Text(
@@ -623,7 +616,8 @@ class _CustomerMapTabState extends State<CustomerMapTab>
                         ).push(_fastRoute(Container()));
                       },
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 12),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -809,7 +803,7 @@ class _OnPharmacyClickListener extends mapbox.OnPointAnnotationClickListener {
   _OnPharmacyClickListener({
     required this.context,
     required this.shopsProvider,
-  }); */
+  });
 
   @override
   bool onPointAnnotationClick(mapbox.PointAnnotation annotation) {
@@ -817,9 +811,14 @@ class _OnPharmacyClickListener extends mapbox.OnPointAnnotationClickListener {
     final shopName = annotation.textField ?? "";
     final shop = shops.firstWhere(
       (s) => s.name == shopName,
-      orElse: () => shops.isNotEmpty ? shops.first : Pharmacy(
-        id: 'tmp', name: shopName, lat: 0, lng: 0, tier: PharmacyTier.base
-      ),
+      orElse: () => shops.isNotEmpty
+          ? shops.first
+          : Pharmacy(
+              id: 'tmp',
+              name: shopName,
+              lat: 0,
+              lng: 0,
+              tier: PharmacyTier.base),
     );
 
     showModalBottomSheet(
@@ -841,189 +840,196 @@ class _OnPharmacyClickListener extends mapbox.OnPointAnnotationClickListener {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(2),
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.circular(2),
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(16),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF10B981).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: const Icon(
+                      Icons.store_rounded,
+                      color: Color(0xFF10B981),
+                    ),
                   ),
-                  child: const Icon(
-                    Icons.store_rounded,
-                    color: Color(0xFF10B981),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          shop.name,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        Text(
+                          'Official Sanjeevani Partner',
+                          style:
+                              TextStyle(color: Colors.grey[600], fontSize: 13),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        shop.name,
-                        style: const TextStyle(
-                          fontSize: 22,
+                  IconButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    icon: const Icon(Icons.close_rounded),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+              const Divider(),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  const Text(
+                    'ORDER OPTIONS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1.2,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (shop.tier == PharmacyTier.ultraPro)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.amber.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border:
+                            Border.all(color: Colors.amber.withOpacity(0.5)),
+                      ),
+                      child: const Text(
+                        'ULTRA PRO',
+                        style: TextStyle(
+                          color: Colors.orange,
+                          fontSize: 9,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 16),
+
+              // MAIN ACTION: AI CHAT (Always Available)
+              _buildTieredButton(
+                onPressed: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c) => ChatbotPage(initialPharmacy: shop),
+                    ),
+                  );
+                },
+                icon: Icons.chat_bubble_outline_rounded,
+                label: 'Chat with Sanjeevani AI',
+                color: const Color(0xFF0066FF),
+                isPrimary: true,
+              ),
+
+              // TIERED ACTIONS: Pro and Ultra Pro
+              if (shop.tier == PharmacyTier.pro ||
+                  shop.tier == PharmacyTier.ultraPro) ...[
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    // WhatsApp
+                    Expanded(
+                      child: _buildTieredButton(
+                        onPressed: () =>
+                            _launchURL('https://wa.me/${shop.whatsapp}'),
+                        icon: Icons.message_rounded,
+                        label: 'WhatsApp',
+                        color: const Color(0xFF25D366),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Telegram
+                    Expanded(
+                      child: _buildTieredButton(
+                        onPressed: () =>
+                            _launchURL('https://t.me/${shop.telegram}'),
+                        icon: Icons.send_rounded,
+                        label: 'Telegram',
+                        color: const Color(0xFF0088CC),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+
+              // ULTRA PRO EXCLUSIVE: Call
+              if (shop.tier == PharmacyTier.ultraPro) ...[
+                const SizedBox(height: 12),
+                _buildTieredButton(
+                  onPressed: () => _launchURL('tel:${shop.phone}'),
+                  icon: Icons.phone_forwarded_rounded,
+                  label: 'Direct Call to Pharmacy',
+                  color: const Color(0xFF10B981),
+                ),
+                const SizedBox(height: 12),
+                Center(
+                  child: Text(
+                    'Exclusive Ultra Pro Partner: Guaranteed 20-min processing',
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      color: Colors.grey[500],
+                      fontStyle: FontStyle.italic,
+                    ),
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 16),
+              const Divider(),
+              const SizedBox(height: 12),
+
+              // PHARMACY PROFILE
+              InkWell(
+                onTap: () {
+                  Navigator.pop(ctx);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (c) => ShopProfilePage(shopName: shop.name),
+                    ),
+                  );
+                },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.info_outline_rounded,
+                          size: 16, color: Colors.grey[600]),
+                      const SizedBox(width: 8),
                       Text(
-                        'Official Sanjeevani Partner',
+                        'View Pharmacy Profile & Reviews',
                         style: TextStyle(color: Colors.grey[600], fontSize: 13),
                       ),
                     ],
                   ),
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(ctx),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                const Text(
-                  'ORDER OPTIONS',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 1.2,
-                    color: Colors.grey,
-                  ),
-                ),
-                const Spacer(),
-                if (shop.tier == PharmacyTier.ultraPro)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.amber.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.amber.withOpacity(0.5)),
-                    ),
-                    child: const Text(
-                      'ULTRA PRO',
-                      style: TextStyle(
-                        color: Colors.orange,
-                        fontSize: 9,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            
-            // MAIN ACTION: AI CHAT (Always Available)
-            _buildTieredButton(
-              onPressed: () {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (c) => ChatbotPage(initialPharmacy: shop),
-                  ),
-                );
-              },
-              icon: Icons.chat_bubble_outline_rounded,
-              label: 'Chat with Sanjeevani AI',
-              color: const Color(0xFF0066FF),
-              isPrimary: true,
-            ),
-            
-            // TIERED ACTIONS: Pro and Ultra Pro
-            if (shop.tier == PharmacyTier.pro || shop.tier == PharmacyTier.ultraPro) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                   // WhatsApp
-                  Expanded(
-                    child: _buildTieredButton(
-                      onPressed: () => _launchURL('https://wa.me/${shop.whatsapp}'),
-                      icon: Icons.message_rounded,
-                      label: 'WhatsApp',
-                      color: const Color(0xFF25D366),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  // Telegram
-                  Expanded(
-                    child: _buildTieredButton(
-                      onPressed: () => _launchURL('https://t.me/${shop.telegram}'),
-                      icon: Icons.send_rounded,
-                      label: 'Telegram',
-                      color: const Color(0xFF0088CC),
-                    ),
-                  ),
-                ],
               ),
-            ],
-
-            // ULTRA PRO EXCLUSIVE: Call
-            if (shop.tier == PharmacyTier.ultraPro) ...[
-              const SizedBox(height: 12),
-              _buildTieredButton(
-                onPressed: () => _launchURL('tel:${shop.phone}'),
-                icon: Icons.phone_forwarded_rounded,
-                label: 'Direct Call to Pharmacy',
-                color: const Color(0xFF10B981),
-              ),
-              const SizedBox(height: 12),
-              Center(
-                child: Text(
-                  'Exclusive Ultra Pro Partner: Guaranteed 20-min processing',
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    color: Colors.grey[500],
-                    fontStyle: FontStyle.italic,
-                  ),
-                ),
-              ),
-            ],
-
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 12),
-            
-            // PHARMACY PROFILE
-            InkWell(
-              onTap: () {
-                Navigator.pop(ctx);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (c) => ShopProfilePage(shopName: shop.name),
-                  ),
-                );
-              },
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.info_outline_rounded, size: 16, color: Colors.grey[600]),
-                    const SizedBox(width: 8),
-                    Text(
-                      'View Pharmacy Profile & Reviews',
-                      style: TextStyle(color: Colors.grey[600], fontSize: 13),
-                    ),
-                  ],
-                ),
-              ),
-            ),
             ],
           ),
         ),
@@ -1059,7 +1065,8 @@ class _OnPharmacyClickListener extends mapbox.OnPointAnnotationClickListener {
           backgroundColor: color,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 56),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           elevation: 4,
           shadowColor: color.withOpacity(0.3),
         ),
@@ -1068,14 +1075,121 @@ class _OnPharmacyClickListener extends mapbox.OnPointAnnotationClickListener {
       return OutlinedButton.icon(
         onPressed: onPressed,
         icon: Icon(icon, size: 18),
-        label: Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+        label: Text(label,
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
         style: OutlinedButton.styleFrom(
           foregroundColor: color,
           side: BorderSide(color: color.withOpacity(0.5)),
           minimumSize: const Size(double.infinity, 50),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         ),
       );
     }
+  }
+}
+
+class CustomerNotification {
+  final String title;
+  final String message;
+  final bool isUnread;
+
+  const CustomerNotification({
+    required this.title,
+    required this.message,
+    this.isUnread = false,
+  });
+}
+
+class CustomerNotificationsPage extends StatelessWidget {
+  const CustomerNotificationsPage({super.key});
+
+  static const List<CustomerNotification> inbox = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B0B0F),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0B0B0F),
+        foregroundColor: Colors.white,
+        title: const Text('Notifications'),
+      ),
+      body: inbox.isEmpty
+          ? const Center(
+              child: Text(
+                'No notifications',
+                style: TextStyle(color: Colors.white70),
+              ),
+            )
+          : ListView.separated(
+              padding: const EdgeInsets.all(16),
+              itemCount: inbox.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 12),
+              itemBuilder: (context, index) {
+                final item = inbox[index];
+                return ListTile(
+                  tileColor: const Color(0xFF17171C),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  title: Text(
+                    item.title,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(
+                    item.message,
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                  trailing: item.isUnread
+                      ? const Icon(Icons.circle,
+                          color: Colors.redAccent, size: 10)
+                      : null,
+                );
+              },
+            ),
+    );
+  }
+}
+
+class ShopProfilePage extends StatelessWidget {
+  final String shopName;
+
+  const ShopProfilePage({super.key, required this.shopName});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0B0B0F),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF0B0B0F),
+        foregroundColor: Colors.white,
+        title: const Text('Pharmacy Profile'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              shopName,
+              style: GoogleFonts.inter(
+                color: Colors.white,
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'Profile and reviews will appear here.',
+              style: GoogleFonts.inter(
+                color: Colors.white70,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

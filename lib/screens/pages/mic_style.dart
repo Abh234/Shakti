@@ -246,7 +246,7 @@ class _MicStylePopupState extends State<MicStylePopup>
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                   decoration: BoxDecoration(
-                    color: Colors.grey[100],
+                    color: _micElevated,
                     border: Border.all(color: _micBorder),
                     borderRadius: BorderRadius.circular(20),
                   ),
@@ -282,9 +282,9 @@ class FrequencyVisualizerPainter extends CustomPainter {
 
       final paint = Paint()
         ..color = isListening
-            ? Color.lerp(const Color(0xFFF3E5F5), const Color(0xFFFF69B4),
+            ? Color.lerp(_micAccentDeep, _micAccent,
                 frequencyLevels[i] / 30)!
-            : Colors.grey[300]!;
+            : _micBorder;
 
       // top bar
       canvas.drawRRect(

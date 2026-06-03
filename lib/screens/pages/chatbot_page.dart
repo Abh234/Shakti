@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:http/http.dart' as http;
+import 'package:shakti/services/map_service.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:async';
@@ -23,9 +24,9 @@ const Color _chatSecondaryText = Color(0xFFBDBDBD);
 const Color _chatAccent = Color(0xFFFF69B4);
 const Color _chatAccentDeep = Color(0xFF8B5CF6);
 
-// Wrapper used by HomeScreen navigation
 class ChatbotPage extends StatelessWidget {
-  const ChatbotPage({super.key});
+  final Pharmacy? initialPharmacy;
+  const ChatbotPage({super.key, this.initialPharmacy});
 
   @override
   Widget build(BuildContext context) => const ChatBotScreen();
@@ -831,9 +832,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       return Container(
         padding: const EdgeInsets.all(8.0),
         decoration: BoxDecoration(
-          color: message.isUser
-              ? const Color(0xFF2A1025)
-              : _chatSurface,
+          color: message.isUser ? const Color(0xFF2A1025) : _chatSurface,
           border: Border.all(color: _chatBorder),
           borderRadius: BorderRadius.circular(12),
         ),
@@ -1035,8 +1034,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         color: _chatBackground,
-        border:
-            const Border(top: BorderSide(color: _chatBorder, width: 1)),
+        border: const Border(top: BorderSide(color: _chatBorder, width: 1)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.45),
@@ -1152,8 +1150,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                   shape: BoxShape.circle,
                 ),
                 child: IconButton(
-                  icon:
-                      const Icon(Icons.auto_awesome, color: _chatAccentDeep),
+                  icon: const Icon(Icons.auto_awesome, color: _chatAccentDeep),
                   iconSize: 24,
                   onPressed: _onVoiceAssistantPressed,
                   tooltip: 'Voice Assistant',
@@ -1535,8 +1532,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                   ),
                   child: const Row(
                     children: [
-                      Icon(Icons.edit_outlined,
-                          size: 20, color: _chatAccent),
+                      Icon(Icons.edit_outlined, size: 20, color: _chatAccent),
                       SizedBox(width: 12),
                       Text(
                         'New chat',
@@ -1617,7 +1613,7 @@ class _ChatBotScreenState extends State<ChatBotScreen>
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
-                    color: _chatPrimaryText,
+                      color: _chatPrimaryText,
                     ),
                   ),
                   const SizedBox(height: 16),

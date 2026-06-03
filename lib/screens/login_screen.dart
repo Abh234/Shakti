@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'pages/chatbot_page.dart';
 import '../services/auth_service.dart';
 import 'customer_map_tab.dart';
 
